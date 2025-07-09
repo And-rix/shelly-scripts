@@ -1,3 +1,8 @@
+// MIT License
+// Copyright (c) 2025 And-rix
+// GitHub: https://github.com/And-rix
+// License: /LICENSE
+
 // === Configuration ===
 let reboot_delay = 15;              // Seconds the router stays powered off
 let check_interval = 60;            // Seconds between checks
