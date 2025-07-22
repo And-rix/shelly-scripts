@@ -10,10 +10,11 @@ let max_failures = 5;               // Number of failed checks before triggering
 let recovery_wait = 300;            // Seconds to wait after powering the router back on
 let max_retries_after_reboot = 10;  // Max number of checks after reboot before rebooting again
 
+// === URL List for Online checks ===
 let urls = [
   "http://example.com",
   "http://neverssl.com",
-  "http://one.one.one.one"
+  "http://captive.apple.com"
 ];
 
 // === Telegram Configuration ===
