@@ -1,5 +1,5 @@
 // MIT License
-// Copyright (c) 2025 And-rix
+// Copyright (c) 2026 And-rix
 // GitHub: https://github.com/And-rix
 // License: /LICENSE
 
