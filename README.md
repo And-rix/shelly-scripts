@@ -10,3 +10,4 @@ Older (Gen1) Shelly devices (such as the classic Shelly 1, Shelly 2.5, or Shelly
 4. _Useful_ Activate the "***Run on startup***" option
 
 [![HitCount](https://hits.dwyl.com/And-rix/shelly-scripts.svg)](https://hits.dwyl.com/And-rix/shelly-scripts)
+![GitHub stars](https://img.shields.io/github/stars/And-rix/shelly-scripts?style=social)
