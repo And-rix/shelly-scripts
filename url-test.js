@@ -20,7 +20,8 @@ function sendNtfy(message, failedCount, totalCount) {
   let url = "https://ntfy.sh/" + ntfy_topic;
   let allOk = (failedCount === 0);
   
-  let title = allOk ? "✅ Internet Check: All OK" : "⚠️ Internet Check: " + failedCount + " Failed";
+  // Title for the smartphone lock screen
+  let title = allOk ? "✅ Internet Check: OK" : "⚠️ Internet Check: FAILED";
   let tags = allOk ? "white_check_mark" : "warning,dns";
   let priority = allOk ? ntfy_priority : "4";
 
@@ -34,13 +35,12 @@ function sendNtfy(message, failedCount, totalCount) {
         "Priority": priority,
         "Tags": tags
     },
-    timeout: 10 // Timeout slightly increased to 10s
+    timeout: 10
   }, function (res, err) {
-    // Check if we got a 200 OK response, even if 'err' is triggered
     if (res && res.code === 200) {
       print("✅ ntfy successfully sent (Response 200).");
     } else {
-      print("🔴 ntfy truly failed or timed out. Code: " + (res ? res.code : "N/A"));
+      print("🔴 ntfy failed. Code: " + (res ? res.code : "N/A"));
     }
   });
 }
@@ -49,8 +49,9 @@ function sendNtfy(message, failedCount, totalCount) {
 function checkConnectionOnce() {
   let failedUrls = [];
   let completed = 0;
+  let totalCount = urls.length;
 
-  print("🔍 Checking " + urls.length + " URLs...");
+  print("🔍 Checking " + totalCount + " URLs...");
 
   urls.forEach(function (url) {
     Shelly.call("HTTP.GET", { url: url, timeout: 5000 }, function (res, err) {
@@ -63,17 +64,18 @@ function checkConnectionOnce() {
         print("🟢 OK: " + url);
       }
 
-      // Once all requests are finished (success or failure)
-      if (completed === urls.length) {
-        let messageBody = "";
+      // Once all requests are finished
+      if (completed === totalCount) {
+        let reachedCount = totalCount - failedUrls.length;
+        let messageBody = "Status: " + reachedCount + "/" + totalCount + " URLs reached.\n";
 
         if (failedUrls.length === 0) {
-          messageBody = "🟢 All " + urls.length + " test URLs reachable.";
+          messageBody += "🟢 Connection is stable.";
         } else {
-          messageBody = "🔴 Could NOT be reached:\n- " + failedUrls.join("\n- ");
+          messageBody += "\n🔴 Failed addresses:\n- " + failedUrls.join("\n- ");
         }
 
-        sendNtfy(messageBody, failedUrls.length, urls.length);
+        sendNtfy(messageBody, failedUrls.length, totalCount);
       }
     });
   });
