@@ -1,21 +1,21 @@
+// router-watchdog.js
 // MIT License
 // Copyright (c) 2026 And-rix
 // GitHub: https://github.com/And-rix
 // License: /LICENSE
 
 // === Configuration ===
-let reboot_delay = 15;               // Seconds router stays powered off
-let check_interval = 60;             // Seconds between connectivity checks
-let max_failures = 5;                // Number of failed checks before reboot
-let recovery_wait = 300;             // Seconds to wait after reboot before checking
-let max_retries_after_reboot = 10;   // Max retries after reboot before rebooting again
-let post_reboot_retry_delay = 60;    // Seconds between retries after reboot
+let reboot_delay = 15;               		  // Seconds router stays powered off
+let check_interval = 60;             		  // Seconds between connectivity checks
+let max_failures = 5;                		  // Number of failed checks before reboot
+let recovery_wait = 300;             		  // Seconds to wait after reboot before checking
+let max_retries_after_reboot = 10;   		  // Max retries after reboot before rebooting again
+let post_reboot_retry_delay = 60;    		  // Seconds between retries after reboot
 
-// === Telegram Configuration ===
-let enable_telegram_notify = false;   // true = enabled; false = disabled
-let telegram_token = "123456:ABCDEF-YourTokenHere";  // Replace with your bot token
-let telegram_chat_id = "123456789";                  // Replace with your chat ID (group-chats: starting with -)
-
+// === ntfy Configuration ===
+let enable_ntfy_notify = true;         		// true = enabled; false = disabled
+let ntfy_topic = "PLACEHOLDER-TOPIC"; 		// Your ntfy topic
+let ntfy_priority = "4";               		// 1-5 (5 is most urgent)
 
 // === URL list for connectivity checks ===
 let urls = [
@@ -49,24 +49,25 @@ function updateLastSuccessfulUptime() {
   });
 }
 
-// === Send Telegram notification ===
-function sendTelegramNotification(message) {
-  if (!enable_telegram_notify) return;
-  let url = "https://api.telegram.org/bot" + telegram_token + "/sendMessage";
-  let payload = {
-    chat_id: telegram_chat_id,
-    text: message
-  };
-  Shelly.call("http.post", { 
-    url: url, 
-    body: JSON.stringify(payload), 
-    timeout: 5000, 
-    headers: {"Content-Type": "application/json"} 
+// === Send ntfy notification ===
+function sendNotification(message) {
+  if (!enable_ntfy_notify) return;
+  
+  Shelly.call("HTTP.POST", { 
+    url: "https://ntfy.sh/" + ntfy_topic, 
+    body: message, 
+    timeout: 10000, // Increased timeout to 10s
+    headers: {
+        "Title": "Shelly Router Watchdog",
+        "Priority": ntfy_priority,
+        "Tags": "electric_plug,white_check_mark"
+    } 
   }, function(res, err) {
-    if (!err) {
-      print("✅ Telegram notification sent.");
+    // Check for HTTP 200 even if the Shelly internal 'err' is present
+    if (res && res.code === 200) {
+      print("🟢 ntfy notification sent successfully (Response 200).");
     } else {
-      print("❌ Failed to send Telegram notification.");
+      print("🔴 Failed to send ntfy notification. Code: " + (res ? res.code : "N/A"));
     }
   });
 }
@@ -96,12 +97,12 @@ function checkConnection() {
 
   checkUrlsSerial(0, function(success) {
     if (success) {
-      print("✅ Internet check OK");
+      print("🟢 Internet check OK");
       fail_count = 0;
       updateLastSuccessfulUptime();
     } else {
       fail_count++;
-      print("❌ Internet check failed. Fail count:", fail_count);
+      print("🔴 Internet check failed. Fail count:", fail_count);
 
       if (fail_count >= max_failures) {
         print("🔌 Max failures reached – rebooting router.");
@@ -133,7 +134,7 @@ function rebootRouter() {
 function postRebootCheck() {
   checkUrlsSerial(0, function(success) {
     if (success) {
-      print("✅ Internet back online after reboot.");
+      print("🟢 Internet back online after reboot.");
       waiting_for_recovery = false;
       fail_count = 0;
       post_reboot_retry_count = 0;
@@ -141,13 +142,13 @@ function postRebootCheck() {
       
       // Send a notification if a reboot occurred
       if (router_rebooted) {
-        let message = "Router rebooted and internet connection is back online.";
-        sendTelegramNotification(message);
+        let message = "🟢 Router was rebooted and internet is online!";
+        sendNotification(message);
         router_rebooted = false; // Reset the flag
       }
     } else {
       post_reboot_retry_count++;
-      print("❌ Internet still down after reboot. Attempt:", post_reboot_retry_count);
+      print("🔴 Internet still down after reboot. Attempt:", post_reboot_retry_count);
 
       if (post_reboot_retry_count >= max_retries_after_reboot) {
         print("🔁 Max retries reached – rebooting router again.");

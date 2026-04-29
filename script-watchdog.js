@@ -1,37 +1,37 @@
+// script-watchdog.js
 // MIT License
 // Copyright (c) 2026 And-rix
 // GitHub: https://github.com/And-rix
 // License: /LICENSE
 
 // === Configuration ===
-let monitored_script_id = 2;            // ID of the script to monitor
-let check_interval_sec = 60;           // Check interval in seconds
+let monitored_script_id = 1;            	// ID of the script to monitor
+let check_interval_sec = 60;           		// Check interval in seconds
 
-// === Telegram Configuration ===
-let enable_telegram_notify = false;    // true = enabled; false = disabled
-let telegram_token = "123456:ABCDEF-YourTokenHere";
-let telegram_chat_id = "123456789";    // Group chats: starts with -
+// === ntfy Configuration ===
+let enable_ntfy_notify = true;         	  // true = enabled; false = disabled
+let ntfy_topic = "PLACEHOLDER-TOPIC"; 	  // Your ntfy topic
+let ntfy_priority = "4";               		// 1-5 (4 = High)
 
-// === Send Telegram Notification ===
-function sendTelegramNotification(message) {
-  if (!enable_telegram_notify) return;
+// === Send ntfy Notification (Optimized) ===
+function sendNotification(message) {
+  if (!enable_ntfy_notify) return;
 
-  let url = "https://api.telegram.org/bot" + telegram_token + "/sendMessage";
-  let payload = {
-    chat_id: telegram_chat_id,
-    text: message
-  };
-
-  Shelly.call("http.post", {
-    url: url,
-    body: JSON.stringify(payload),
-    timeout: 5000,
-    headers: { "Content-Type": "application/json" }
+  Shelly.call("HTTP.POST", {
+    url: "https://ntfy.sh/" + ntfy_topic,
+    body: message,
+    timeout: 10000,
+    headers: {
+      "Title": "Shelly Script Monitor",
+      "Priority": ntfy_priority,
+      "Tags": "mag,refresh"
+    }
   }, function (res, err) {
-    if (!err) {
-      print("✅ Telegram notification sent.");
+    // Optimized check: HTTP 200 means success even if 'err' is reported
+    if (res && res.code === 200) {
+      print("🟢 ntfy notification sent successfully.");
     } else {
-      print("❌ Failed to send Telegram notification.");
+      print("🔴 Failed to send ntfy notification. Code: " + (res ? res.code : "N/A"));
     }
   });
 }
@@ -40,28 +40,30 @@ function sendTelegramNotification(message) {
 function checkScriptStatus() {
   Shelly.call("Script.GetStatus", { id: monitored_script_id }, function (res, err) {
     if (err) {
-      print("❌ Error querying script ID", monitored_script_id);
+      print("🔴 Error querying script ID " + monitored_script_id);
       return;
     }
 
     if (res.running === false) {
-      print("⚠️ Script ID", monitored_script_id, "is not running – starting it...");
+      print("⚠️ Script ID " + monitored_script_id + " is NOT running – starting it...");
+      
       Shelly.call("Script.Start", { id: monitored_script_id }, function (startRes, startErr) {
         if (startErr) {
-          print("❌ Error starting script ID", monitored_script_id);
+          print("🔴 Error starting script ID " + monitored_script_id);
         } else {
-          print("✅ Script ID", monitored_script_id, "was successfully started");
+          print("🟢 Script ID " + monitored_script_id + " was successfully started");
 
           // Send notification after successful recovery
-          sendTelegramNotification("🛠️ Script ID " + monitored_script_id + " was not running and has been restarted by the monitor.");
+          let msg = "🟢 Script ID " + monitored_script_id + " was stopped and has been restarted by the monitor.";
+          sendNotification(msg);
         }
       });
     } else {
-      print("✅ Script ID", monitored_script_id, "is running fine.");
+      print("🟢 Script ID " + monitored_script_id + " is running fine.");
     }
   });
 }
 
 // === Init ===
-print("🔎 Script Monitor started (monitoring ID", monitored_script_id, ")");
+print("🔎 Script Monitor started (monitoring ID: " + monitored_script_id + ")");
 Timer.set(check_interval_sec * 1000, true, checkScriptStatus);
