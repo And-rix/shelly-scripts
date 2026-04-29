@@ -5,17 +5,17 @@
 // License: /LICENSE
 
 // === Configuration ===
-let reboot_delay = 15;               		  // Seconds router stays powered off
-let check_interval = 60;             		  // Seconds between connectivity checks
-let max_failures = 5;                		  // Number of failed checks before reboot
-let recovery_wait = 300;             		  // Seconds to wait after reboot before checking
-let max_retries_after_reboot = 10;   		  // Max retries after reboot before rebooting again
-let post_reboot_retry_delay = 60;    		  // Seconds between retries after reboot
+let reboot_delay = 15;                    // Seconds router stays powered off
+let check_interval = 60;                  // Seconds between connectivity checks
+let max_failures = 5;                     // Number of failed checks before reboot
+let recovery_wait = 300;                  // Seconds to wait after reboot before checking
+let max_retries_after_reboot = 10;        // Max retries after reboot before rebooting again
+let post_reboot_retry_delay = 60;         // Seconds between retries after reboot
 
 // === ntfy Configuration ===
-let enable_ntfy_notify = true;         		// true = enabled; false = disabled
-let ntfy_topic = "PLACEHOLDER-TOPIC"; 		// Your ntfy topic
-let ntfy_priority = "4";               		// 1-5 (5 is most urgent)
+let enable_ntfy_notify = true;            // true = enabled; false = disabled
+let ntfy_topic = "PLACEHOLDER-TOPIC";     // Your ntfy topic
+let ntfy_priority = "4";                  // 1-5 (5 is most urgent)
 
 // === URL list for connectivity checks ===
 let urls = [

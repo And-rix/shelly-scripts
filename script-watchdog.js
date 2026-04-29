@@ -5,13 +5,13 @@
 // License: /LICENSE
 
 // === Configuration ===
-let monitored_script_id = 1;            	// ID of the script to monitor
-let check_interval_sec = 60;           		// Check interval in seconds
+let monitored_script_id = 1;              // ID of the script to monitor
+let check_interval_sec = 60;              // Check interval in seconds
 
 // === ntfy Configuration ===
-let enable_ntfy_notify = true;         	  // true = enabled; false = disabled
-let ntfy_topic = "PLACEHOLDER-TOPIC"; 	  // Your ntfy topic
-let ntfy_priority = "4";               		// 1-5 (4 = High)
+let enable_ntfy_notify = true;            // true = enabled; false = disabled
+let ntfy_topic = "PLACEHOLDER-TOPIC";     // Your ntfy topic
+let ntfy_priority = "4";                  // 1-5 (4 = High)
 
 // === Send ntfy Notification (Optimized) ===
 function sendNotification(message) {
